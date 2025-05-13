@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
-@RequestMapping("/books")
+@RequestMapping("/products")
 public class AdminController {
 
     @Autowired
