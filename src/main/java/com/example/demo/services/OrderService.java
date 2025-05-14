@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -93,5 +94,11 @@ public class OrderService {
         cartRepo.save(cart);
 
         return order;
+    }
+
+    public Map<Object, Object> getByStatus(StatusOrder statusOrder) {
+    }
+
+    public Order updateStatus(Long id, StatusOrder status) {
     }
 }
