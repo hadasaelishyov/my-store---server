@@ -21,10 +21,23 @@ public class ProductService {
         return productRepo.findById(id);
     }
 
+    public List<Product> getByCategoryId(Long categoryId) {
+        return productRepo.findByCategoryId(categoryId);
+    }
+
+    public List<Product> searchByName(String name) {
+        return productRepo.findByNameContainingIgnoreCase(name);
+    }
+
+    public List<Product> getByBrand(String brand) {
+        return productRepo.findByBrand(brand);
+    }
+
     public Product add(Product item) {
-        if (!productRepo.existsById(item.getId())
-                && !productRepo.existsByName(item.getName()))
-                        return productRepo.save(item);
+        // Don't check for ID if it's auto-generated
+        if (!productRepo.existsByName(item.getName())) {
+            return productRepo.save(item);
+        }
         return null;
     }
 

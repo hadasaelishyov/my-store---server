@@ -3,6 +3,8 @@ package com.example.demo.controllers;
 import com.example.demo.entities.Order;
 import com.example.demo.services.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,22 +23,39 @@ public class OrderController {
     }
 
     @GetMapping("/{id}")
-    public Optional<Order> getById(@PathVariable Long id) {
-        return orderService.getById(id);
+    public ResponseEntity<Order> getById(@PathVariable Long id) {
+        Optional<Order> order = orderService.getById(id);
+        return order.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @PostMapping
-    public Order add(@RequestBody Order order) {
-        return orderService.add(order);
+    public ResponseEntity<Order> add(@RequestBody Order order) {
+        Order newOrder = orderService.add(order);
+        return new ResponseEntity<>(newOrder, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/checkout/{cartId}")
+    public ResponseEntity<Order> checkout(@PathVariable Long cartId) {
+        Order newOrder = orderService.createOrderFromCart(cartId);
+        if (newOrder != null) {
+            return new ResponseEntity<>(newOrder, HttpStatus.CREATED);
+        }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
     @PutMapping("/{id}")
-    public Order update(@PathVariable Long id, @RequestBody Order order) {
-        return orderService.update(id, order);
+    public ResponseEntity<Order> update(@PathVariable Long id, @RequestBody Order order) {
+        Order updatedOrder = orderService.update(id, order);
+        if (updatedOrder != null) {
+            return new ResponseEntity<>(updatedOrder, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         orderService.delete(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

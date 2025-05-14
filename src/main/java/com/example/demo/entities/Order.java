@@ -24,13 +24,13 @@ public class Order {
     private LocalDate orderDate;
 
     @Enumerated(EnumType.STRING)
-    private StutusOrder stutusOrder;
+    private StatusOrder stutusOrder;
     private double totalAmount;
 
     @OneToMany(mappedBy = "order")
     private List<OrderItem> orderItems = new ArrayList<OrderItem>();
 
-    public Order(User user, LocalDate orderDate, StutusOrder stutusOrder) {
+    public Order(User user, LocalDate orderDate, StatusOrder stutusOrder) {
         this.user = user;
         this.orderDate = orderDate;
         this.stutusOrder = stutusOrder;

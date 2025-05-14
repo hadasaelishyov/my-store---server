@@ -1,11 +1,15 @@
-
 package com.example.demo.services;
 
-import com.example.demo.entities.Order;
+import com.example.demo.entities.*;
+import com.example.demo.repositories.CartItemRepo;
+import com.example.demo.repositories.CartRepo;
+import com.example.demo.repositories.OrderItemRepo;
 import com.example.demo.repositories.OrderRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,6 +17,15 @@ import java.util.Optional;
 public class OrderService {
     @Autowired
     private OrderRepo orderRepo;
+
+    @Autowired
+    private OrderItemRepo orderItemRepo;
+
+    @Autowired
+    private CartRepo cartRepo;
+
+    @Autowired
+    private CartItemRepo cartItemRepo;
 
     public List<Order> getAll() {
         return orderRepo.findAll();
@@ -36,5 +49,49 @@ public class OrderService {
 
     public void delete(Long id) {
         orderRepo.deleteById(id);
+    }
+
+    @Transactional
+    public Order createOrderFromCart(Long cartId) {
+        Optional<Cart> cartOptional = cartRepo.findById(cartId);
+
+        if (!cartOptional.isPresent()) {
+            return null;
+        }
+
+        Cart cart = cartOptional.get();
+
+        // Only process active carts
+        if (!cart.isActive()) {
+            return null;
+        }
+
+        // Create new order
+        Order order = new Order(cart.getUser(), LocalDate.now(), StatusOrder.PENDING);
+        order = orderRepo.save(order);
+
+        // Get cart items
+        List<CartItem> cartItems = cartItemRepo.findByCartId(cartId);
+        double totalAmount = 0.0;
+
+        // Create order items from cart items
+        for (CartItem cartItem : cartItems) {
+            Product product = cartItem.getProduct();
+            double itemPrice = product.getPrice() * cartItem.getQuantity();
+            totalAmount += itemPrice;
+
+            OrderItem orderItem = new OrderItem(order, product, cartItem.getQuantity(), product.getPrice());
+            orderItemRepo.save(orderItem);
+        }
+
+        // Update order total
+        order.setTotalAmount(totalAmount);
+        order = orderRepo.save(order);
+
+        // Deactivate the cart
+        cart.setActive(false);
+        cartRepo.save(cart);
+
+        return order;
     }
 }
