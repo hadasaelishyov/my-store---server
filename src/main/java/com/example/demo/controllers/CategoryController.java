@@ -2,41 +2,58 @@ package com.example.demo.controllers;
 
 import com.example.demo.entities.Category;
 import com.example.demo.services.CategoryService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/categories")
 @CrossOrigin(origins = "http://localhost:3000")
 public class CategoryController {
+
     @Autowired
     private CategoryService categoryService;
 
     @GetMapping
-    public List<Category> getAll() {
-        return categoryService.getAll();
+    public ResponseEntity<List<Category>> getAll() {
+        return ResponseEntity.ok(categoryService.getAll());
     }
 
     @GetMapping("/{id}")
-    public Optional<Category> getById(@PathVariable Long id) {
-        return categoryService.getById(id);
+    public ResponseEntity<Category> getById(@PathVariable Long id) {
+        return categoryService.getById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public Category add(@RequestBody Category category) {
-        return categoryService.add(category);
+    public ResponseEntity<Category> add(@RequestBody Category category) {
+        try {
+            return ResponseEntity.ok(categoryService.add(category));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PutMapping("/{id}")
-    public Category update(@PathVariable Long id, @RequestBody Category category) {
-        return categoryService.update(id, category);
+    public ResponseEntity<Category> update(@PathVariable Long id, @RequestBody Category category) {
+        try {
+            return ResponseEntity.ok(categoryService.update(id, category));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        categoryService.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        try {
+            categoryService.delete(id);
+            return ResponseEntity.ok().build();
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

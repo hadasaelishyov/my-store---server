@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public interface ReviewRepo extends JpaRepository<Review, Long> {
@@ -55,4 +56,6 @@ public interface ReviewRepo extends JpaRepository<Review, Long> {
     boolean existsByUserIdAndProductId(Long userId, Long productId);
 
     void deleteByProductId(Long productId);
+
+    Map<Integer, Long> countRatingsByProduct(Long productId);
 }

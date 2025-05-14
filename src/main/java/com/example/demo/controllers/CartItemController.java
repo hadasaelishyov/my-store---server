@@ -2,41 +2,58 @@ package com.example.demo.controllers;
 
 import com.example.demo.entities.CartItem;
 import com.example.demo.services.CartItemService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/cartItems")
 @CrossOrigin(origins = "http://localhost:3000")
 public class CartItemController {
+
     @Autowired
     private CartItemService cartItemService;
 
     @GetMapping
-    public List<CartItem> getAll() {
-        return cartItemService.getAll();
+    public ResponseEntity<List<CartItem>> getAll() {
+        return ResponseEntity.ok(cartItemService.getAll());
     }
 
     @GetMapping("/{id}")
-    public Optional<CartItem> getById(@PathVariable Long id) {
-        return cartItemService.getById(id);
+    public ResponseEntity<CartItem> getById(@PathVariable Long id) {
+        return cartItemService.getById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public CartItem add(@RequestBody CartItem cartItem) {
-        return cartItemService.add(cartItem);
+    public ResponseEntity<CartItem> add(@RequestBody CartItem cartItem) {
+        try {
+            return ResponseEntity.ok(cartItemService.add(cartItem));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PutMapping("/{id}")
-    public CartItem update(@PathVariable Long id, @RequestBody CartItem cartItem) {
-        return cartItemService.update(id, cartItem);
+    public ResponseEntity<CartItem> update(@PathVariable Long id, @RequestBody CartItem cartItem) {
+        try {
+            return ResponseEntity.ok(cartItemService.update(id, cartItem));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        cartItemService.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        try {
+            cartItemService.delete(id);
+            return ResponseEntity.ok().build();
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

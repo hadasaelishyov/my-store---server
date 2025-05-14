@@ -4,14 +4,14 @@ import com.example.demo.dto.UserLoginDto;
 import com.example.demo.dto.UserRegistrationDto;
 import com.example.demo.entities.User;
 import com.example.demo.services.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
@@ -26,38 +26,32 @@ public class AuthController {
         boolean isAuthenticated = userService.authenticate(loginDto.getEmail(), loginDto.getPassword());
 
         if (isAuthenticated) {
-            User user = userService.getByEmail(loginDto.getEmail()).orElse(null);
-            if (user != null) {
-                Map<String, Object> response = new HashMap<>();
-                response.put("email", user.getEmail());
-                response.put("username", user.getUsername());
-                response.put("isAdmin", user.getRole());
-                // You could add JWT token here for proper authentication
-                return new ResponseEntity<>(response, HttpStatus.OK);
-            }
-        }
+            Optional<User> userOpt = userService.getByEmail(loginDto.getEmail());
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
 
-        return new ResponseEntity<>("Invalid credentials", HttpStatus.UNAUTHORIZED);
+                Map<String, Object> response = new HashMap<>();
+                response.put("id", user.getId());
+                response.put("name", user.getUsername());
+                response.put("email", user.getEmail());
+                response.put("role", user.getRole());
+
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.status(404).body("User not found");
+            }
+        } else {
+            return ResponseEntity.status(401).body("Invalid email or password");
+        }
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody UserRegistrationDto registrationDto) {
-        if (userService.getByEmail(registrationDto.getEmail()).isPresent()) {
-            return new ResponseEntity<>("Email already exists", HttpStatus.BAD_REQUEST);
+    public ResponseEntity<?> register(@Valid @RequestBody User u) {
+        try {
+            User user = userService.register(u);
+            return ResponseEntity.ok("User registered successfully");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Email already exists");
         }
-
-        // Convert DTO to User entity
-        User user = new User();
-        user.setUsername(registrationDto.getUsername());
-        user.setEmail(registrationDto.getEmail());
-        user.setPassword(registrationDto.getPassword());
-        user.setPhone(registrationDto.getPhone());
-        user.setAddress(registrationDto.getAddress());
-
-        User newUser = userService.register(user);
-
-        // Don't return password in response
-        newUser.setPassword(null);
-        return new ResponseEntity<>(newUser, HttpStatus.CREATED);
     }
 }

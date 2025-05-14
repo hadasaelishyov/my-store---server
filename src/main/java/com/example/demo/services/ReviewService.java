@@ -9,6 +9,7 @@ import com.example.demo.repositories.ReviewRepo;
 import com.example.demo.repositories.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -79,8 +80,11 @@ public class ReviewService {
      * Get approved reviews by product ID
      */
     public List<Review> getApprovedByProductId(Long productId) {
-        return reviewRepo.findByProductIdAndApprovedTrue(productId);
+        Pageable pageable = PageRequest.of(0, 10);
+        return reviewRepo.findByProductIdAndApprovedTrue(productId, pageable).getContent();
     }
+
+
 
     /**
      * Get reviews pending moderation (admin function)
@@ -254,7 +258,8 @@ public class ReviewService {
      * Calculate average rating for a product
      */
     public double calculateAverageRating(Long productId) {
-        List<Review> reviews = reviewRepo.findByProductIdAndApprovedTrue(productId);
+        Pageable pageable = PageRequest.of(0, 10);
+        List<Review> reviews = reviewRepo.findByProductIdAndApprovedTrue(productId,pageable).getContent();
         if (reviews.isEmpty()) {
             return 0.0;
         }
