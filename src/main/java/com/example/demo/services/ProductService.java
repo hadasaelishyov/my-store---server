@@ -53,7 +53,15 @@ public class ProductService {
         productRepo.deleteById(id);
     }
 
-    public Object getLowStockProducts(int i) {
+    public List<Product> getLowStockProducts(int threshold) {
+        return productRepo.findByQuantityLessThan(threshold);
+    }
 
+    public List<Product> getProductsByPriceRange(double minPrice, double maxPrice) {
+        return productRepo.findByPriceBetween(minPrice, maxPrice);
+    }
+
+    public List<Product> getProductsByPriceRangeAndCategory(double minPrice, double maxPrice, Long categoryId) {
+        return productRepo.findByPriceRangeAndCategory(minPrice, maxPrice, categoryId);
     }
 }

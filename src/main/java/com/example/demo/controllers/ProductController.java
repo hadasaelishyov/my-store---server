@@ -5,6 +5,7 @@ import com.example.demo.services.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -44,8 +45,28 @@ public class ProductController {
         return productService.getByBrand(brand);
     }
 
+    @GetMapping("/price-range")
+    public List<Product> getByPriceRange(
+            @RequestParam double minPrice,
+            @RequestParam double maxPrice) {
+        return productService.getProductsByPriceRange(minPrice, maxPrice);
+    }
+
+    @GetMapping("/price-range/category/{categoryId}")
+    public List<Product> getByPriceRangeAndCategory(
+            @RequestParam double minPrice,
+            @RequestParam double maxPrice,
+            @PathVariable Long categoryId) {
+        return productService.getProductsByPriceRangeAndCategory(minPrice, maxPrice, categoryId);
+    }
+
+    @GetMapping("/low-stock")
+    public List<Product> getLowStockProducts(@RequestParam(defaultValue = "5") int threshold) {
+        return productService.getLowStockProducts(threshold);
+    }
+
     @PostMapping
-    public ResponseEntity<Product> add(@RequestBody Product product) {
+    public ResponseEntity<Product> add(@Validated @RequestBody Product product) {
         Product newProduct = productService.add(product);
         if (newProduct != null) {
             return new ResponseEntity<>(newProduct, HttpStatus.CREATED);
@@ -54,7 +75,7 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Product> update(@PathVariable Long id, @RequestBody Product product) {
+    public ResponseEntity<Product> update(@PathVariable Long id, @Validated @RequestBody Product product) {
         Product updatedProduct = productService.update(id, product);
         if (updatedProduct != null) {
             return new ResponseEntity<>(updatedProduct, HttpStatus.OK);

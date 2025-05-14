@@ -1,6 +1,7 @@
 package com.example.demo.services;
 
 import com.example.demo.entities.*;
+import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.repositories.CartItemRepo;
 import com.example.demo.repositories.CartRepo;
 import com.example.demo.repositories.OrderItemRepo;
@@ -11,8 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
@@ -96,9 +97,18 @@ public class OrderService {
         return order;
     }
 
-    public Map<Object, Object> getByStatus(StatusOrder statusOrder) {
+    public List<Order> getByStatus(StatusOrder statusOrder) {
+        return orderRepo.findAll().stream()
+                .filter(order -> order.getStatusOrder() == statusOrder)
+                .collect(Collectors.toList());
     }
 
+    @Transactional
     public Order updateStatus(Long id, StatusOrder status) {
+        Order order = orderRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
+
+        order.setStatusOrder(status);
+        return orderRepo.save(order);
     }
 }

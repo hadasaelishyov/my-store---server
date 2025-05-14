@@ -1,5 +1,7 @@
 package com.example.demo.controllers;
 
+import com.example.demo.dto.UserLoginDto;
+import com.example.demo.dto.UserRegistrationDto;
 import com.example.demo.entities.User;
 import com.example.demo.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,23 +22,17 @@ public class AuthController {
     private UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
-        String email = credentials.get("email");
-        String password = credentials.get("password");
-
-        if (email == null || password == null) {
-            return new ResponseEntity<>("Email and password are required", HttpStatus.BAD_REQUEST);
-        }
-
-        boolean isAuthenticated = userService.authenticate(email, password);
+    public ResponseEntity<?> login(@Valid @RequestBody UserLoginDto loginDto) {
+        boolean isAuthenticated = userService.authenticate(loginDto.getEmail(), loginDto.getPassword());
 
         if (isAuthenticated) {
-            User user = userService.getByEmail(email).orElse(null);
+            User user = userService.getByEmail(loginDto.getEmail()).orElse(null);
             if (user != null) {
                 Map<String, Object> response = new HashMap<>();
                 response.put("email", user.getEmail());
                 response.put("username", user.getUsername());
                 response.put("isAdmin", user.is_admin());
+                // You could add JWT token here for proper authentication
                 return new ResponseEntity<>(response, HttpStatus.OK);
             }
         }
@@ -44,12 +41,24 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody User user) {
-        if (userService.getByEmail(user.getEmail()).isPresent()) {
+    public ResponseEntity<?> register(@Valid @RequestBody UserRegistrationDto registrationDto) {
+        if (userService.getByEmail(registrationDto.getEmail()).isPresent()) {
             return new ResponseEntity<>("Email already exists", HttpStatus.BAD_REQUEST);
         }
 
+        // Convert DTO to User entity
+        User user = new User();
+        user.setUsername(registrationDto.getUsername());
+        user.setEmail(registrationDto.getEmail());
+        user.setPassword(registrationDto.getPassword());
+        user.setPhone(registrationDto.getPhone());
+        user.setAddress(registrationDto.getAddress());
+        user.set_admin(registrationDto.is_admin());
+
         User newUser = userService.add(user);
+
+        // Don't return password in response
+        newUser.setPassword(null);
         return new ResponseEntity<>(newUser, HttpStatus.CREATED);
     }
 }
