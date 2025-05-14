@@ -290,7 +290,7 @@ public class ReviewService {
     /**
      * Get rating distribution for a product
      */
-    public Map<Integer, Long> getRatingDistribution(Long productId) {
+    public List<Object[]> getRatingDistribution(Long productId) {
         return reviewRepo.countRatingsByProduct(productId);
     }
 
@@ -305,6 +305,6 @@ public class ReviewService {
      * Get recent reviews
      */
     public List<Review> getRecentReviews(int limit) {
-        return reviewRepo.findTopByOrderByCreatedAtDesc(limit);
+        return reviewRepo.findTopByOrderByCreatedAtDesc(PageRequest.of(0, limit));
     }
 }

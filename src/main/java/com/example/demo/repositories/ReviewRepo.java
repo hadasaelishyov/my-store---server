@@ -49,13 +49,24 @@ public interface ReviewRepo extends JpaRepository<Review, Long> {
     @Query("SELECT r.rating, COUNT(r) FROM Review r WHERE r.product.id = :productId AND r.approved = true GROUP BY r.rating ORDER BY r.rating DESC")
     List<Object[]> countRatingsByProductId(@Param("productId") Long productId);
 
-    List<Object[]> findTopRatedProducts(int limit);
+    @Query("SELECT r.product.id, r.product.name, AVG(r.rating) as avgRating, COUNT(r) as reviewCount " +
+            "FROM Review r " +
+            "WHERE r.approved = true " +
+            "GROUP BY r.product.id, r.product.name " +
+            "HAVING COUNT(r) >= 3 " +
+            "ORDER BY avgRating DESC, reviewCount DESC " +
+            "LIMIT :limit")
+    List<Object[]> findTopRatedProducts(@Param("limit") int limit);
 
-    List<Review> findTopByOrderByCreatedAtDesc(int limit);
+    List<Review> findTopByOrderByCreatedAtDesc(Pageable pageable);
 
     boolean existsByUserIdAndProductId(Long userId, Long productId);
 
     void deleteByProductId(Long productId);
 
-    Map<Integer, Long> countRatingsByProduct(Long productId);
-}
+    @Query("SELECT r.rating as rating, COUNT(r) as count " +
+            "FROM Review r " +
+            "WHERE r.product.id = :productId AND r.approved = true " +
+            "GROUP BY r.rating " +
+            "ORDER BY r.rating")
+    List<Object[]> countRatingsByProduct(@Param("productId") Long productId);}
