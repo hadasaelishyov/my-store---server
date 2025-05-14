@@ -31,7 +31,7 @@ public class AuthController {
                 Map<String, Object> response = new HashMap<>();
                 response.put("email", user.getEmail());
                 response.put("username", user.getUsername());
-                response.put("isAdmin", user.is_admin());
+                response.put("isAdmin", user.getRole());
                 // You could add JWT token here for proper authentication
                 return new ResponseEntity<>(response, HttpStatus.OK);
             }
@@ -53,7 +53,7 @@ public class AuthController {
         user.setPassword(registrationDto.getPassword());
         user.setPhone(registrationDto.getPhone());
         user.setAddress(registrationDto.getAddress());
-        user.set_admin(registrationDto.is_admin());
+        user.setRole(registrationDto.());
 
         User newUser = userService.add(user);
 
