@@ -145,7 +145,7 @@ public class CartService {
     @Transactional
     public CartItem updateCartItemQuantity(Long cartId, Long productId, int newQuantity) {
         if (newQuantity <= 0) {
-            return removeProductFromCart(cartId, productId);
+            removeProductFromCart(cartId, productId);
         }
 
         Cart cart = cartRepo.findById(cartId)

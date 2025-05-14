@@ -53,9 +53,8 @@ public class AuthController {
         user.setPassword(registrationDto.getPassword());
         user.setPhone(registrationDto.getPhone());
         user.setAddress(registrationDto.getAddress());
-        user.setRole(registrationDto.());
 
-        User newUser = userService.add(user);
+        User newUser = userService.register(user);
 
         // Don't return password in response
         newUser.setPassword(null);

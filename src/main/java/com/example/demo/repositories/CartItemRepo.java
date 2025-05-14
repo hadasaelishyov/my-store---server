@@ -10,4 +10,8 @@ import java.util.List;
 public interface CartItemRepo extends JpaRepository<CartItem, Long> {
 
     List<CartItem> findByCartId(Long cartId);
+
+    void deleteByCartId(Long cartId);
+
+    List<CartItem> findByProductId(Long productId);
 }

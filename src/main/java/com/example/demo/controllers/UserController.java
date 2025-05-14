@@ -27,15 +27,15 @@ public class UserController {
 
     @PostMapping
     public User add(@RequestBody User user) {
-        return userService.add(user);
+        return userService.register(user);
     }
 
     @PutMapping("/{email}")
-    public User update(@PathVariable String email, @RequestBody User user) {
-        return userService.update(email, user);
+    public User update(@PathVariable Long id, @RequestBody User user) {
+        return userService.update(id, user);
     }
 
-    @DeleteMapping("/{email}")
+    @DeleteMapping("/{id}")
     public void delete(@PathVariable String email) {
         userService.delete(email);
     }

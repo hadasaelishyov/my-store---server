@@ -47,4 +47,12 @@ public interface ReviewRepo extends JpaRepository<Review, Long> {
     // חישוב התפלגות דירוגים
     @Query("SELECT r.rating, COUNT(r) FROM Review r WHERE r.product.id = :productId AND r.approved = true GROUP BY r.rating ORDER BY r.rating DESC")
     List<Object[]> countRatingsByProductId(@Param("productId") Long productId);
+
+    List<Object[]> findTopRatedProducts(int limit);
+
+    List<Review> findTopByOrderByCreatedAtDesc(int limit);
+
+    boolean existsByUserIdAndProductId(Long userId, Long productId);
+
+    void deleteByProductId(Long productId);
 }
