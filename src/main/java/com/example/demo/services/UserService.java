@@ -19,9 +19,6 @@ public class UserService {
     @Autowired
     private UserRepo userRepo;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
     /**
      * Get all users (admin function)
      */
@@ -71,7 +68,7 @@ public class UserService {
         user.setUpdatedAt(LocalDateTime.now());
 
         // Encrypt password before saving
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPassword(user.getPassword());
 
         return userRepo.save(user);
     }
@@ -99,7 +96,7 @@ public class UserService {
 
         // Only encode password if it's provided and different
         if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
-            existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+            existingUser.setPassword(updatedUser.getPassword());
         }
 
         existingUser.setUpdatedAt(LocalDateTime.now());
@@ -159,7 +156,7 @@ public class UserService {
     public boolean authenticate(String email, String rawPassword) {
         User user = userRepo.findByEmail(email);
         if (user != null && user.isActive()) {
-            return passwordEncoder.matches(rawPassword, user.getPassword());
+            return rawPassword.compareTo(user.getPassword())==0 ;
         }
         return false;
     }
@@ -179,19 +176,5 @@ public class UserService {
         return null;
     }
 
-    /**
-     * Reset password with token (simplified version)
-     */
-    @Transactional
-    public boolean resetPassword(String email, String token, String newPassword) {
-        // In a real application, validate the token from database
-        User user = userRepo.findByEmail(email);
-        if (user != null) {
-            user.setPassword(passwordEncoder.encode(newPassword));
-            user.setUpdatedAt(LocalDateTime.now());
-            userRepo.save(user);
-            return true;
-        }
-        return false;
-    }
+
 }
